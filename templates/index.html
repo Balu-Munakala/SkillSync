@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SkillSync</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 40px; }
+        textarea { width: 100%; height: 200px; }
+        #result { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>SkillSync – AI Resume Role Predictor</h1>
+    <textarea id="resumeInput" placeholder="Paste resume text here..."></textarea>
+    <br>
+    <button onclick="predict()">Predict Role</button>
+
+    <div id="result"></div>
+
+    <hr>
+    <h2>Prediction Dashboard</h2>
+    <canvas id="roleChart" width="400" height="200"></canvas>
+
+    <script>
+        async function predict() {
+            const text = document.getElementById('resumeInput').value;
+            const res = await fetch('/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({resume_text: text})
+            });
+            const data = await res.json();
+            document.getElementById('result').innerHTML = 
+                `<h3>Predicted: ${data.role} (confidence: ${data.confidence})</h3>`;
+            loadChart();
+        }
+
+        async function loadChart() {
+            const res = await fetch('/dashboard_data');
+            const data = await res.json();
+            const labels = data.map(d => d[0]);
+            const counts = data.map(d => d[1]);
+
+            const ctx = document.getElementById('roleChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of predictions',
+                        data: counts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                    }]
+                }
+            });
+        }
+        // Load chart on page load
+        window.onload = loadChart;
+    </script>
+</body>
+</html>
