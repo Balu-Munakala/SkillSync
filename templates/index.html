@@ -22,6 +22,9 @@
     <canvas id="roleChart" width="400" height="200"></canvas>
 
     <script>
+        // ★ ADD THIS GLOBAL VARIABLE at the very top
+        let roleChart = null;
+
         async function predict() {
             const text = document.getElementById('resumeInput').value;
             const res = await fetch('/predict', {
@@ -41,8 +44,15 @@
             const labels = data.map(d => d[0]);
             const counts = data.map(d => d[1]);
 
+            // ★ ADD THIS - Destroy existing chart if it exists
+            if (roleChart !== null) {
+                roleChart.destroy();
+            }
+
             const ctx = document.getElementById('roleChart').getContext('2d');
-            new Chart(ctx, {
+            
+            // ★ CHANGE THIS - Assign to variable instead of 'new Chart'
+            roleChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -54,6 +64,7 @@
                 }
             });
         }
+        
         // Load chart on page load
         window.onload = loadChart;
     </script>
