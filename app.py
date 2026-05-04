@@ -9,6 +9,29 @@ app = Flask(__name__)
 model = joblib.load('model.pkl')
 vectorizer = joblib.load('vectorizer.pkl')
 
+# Get the absolute path for the database file
+DB_PATH = os.path.join(os.path.dirname(__file__), 'predictions.db')
+
+def init_db():
+    """Create the predictions table if it doesn't exist"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            resume_text TEXT NOT NULL,
+            predicted_role TEXT NOT NULL,
+            confidence REAL NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    print("Database initialized successfully")
+
+# Call this function when your app starts
+init_db()
+
 # ---------- Simple ML part ----------
 
 def predict_role(text):
